@@ -160,28 +160,6 @@ cv::Mat convolution_fft(cv::Mat input, std::vector< std::vector<double> > filter
 
 	std::vector< std::vector< std::complex<double> > > f(width, std::vector< std::complex<double> >(width));
 
-	for(int y=0;y<width;y++)
-	{
-		for(int x=0;x<width;x++)
-		{
-			if(x < input.cols && y < input.rows)
-			{
-				f[y][x] = std::complex<double> (input.data[y * input.cols + x], 0);
-			}
-			else
-			{
-				f[y][x] = std::complex<double> (0, 0);
-			}
-		}
-	}
-
-
-
-	std::vector< std::vector< std::complex<double> > > F1 = fft(f, true);
-
-
-
-
 
 
 	for(int y=0;y<width;y++)
@@ -199,7 +177,36 @@ cv::Mat convolution_fft(cv::Mat input, std::vector< std::vector<double> > filter
 		}
 	}
 
+	std::vector< std::vector< std::complex<double> > > F1 = fft(f, true);
+
+
+
+
+	clock_t start = clock();
+
+
+
+	for(int y=0;y<width;y++)
+	{
+		for(int x=0;x<width;x++)
+		{
+			if(x < input.cols && y < input.rows)
+			{
+				f[y][x] = std::complex<double> (input.data[y * input.cols + x], 0);
+			}
+			else
+			{
+				f[y][x] = std::complex<double> (0, 0);
+			}
+		}
+	}
+
+
+
 	std::vector< std::vector< std::complex<double> > > F2 = fft(f, true);
+
+
+
 
 
 
@@ -230,6 +237,7 @@ cv::Mat convolution_fft(cv::Mat input, std::vector< std::vector<double> > filter
 
 
 
+	std::cout << "convolution_fft (precomputed filter) : " << (double)clock()-start << std::endl;
 
 	return output;
 
