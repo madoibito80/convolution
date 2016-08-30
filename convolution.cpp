@@ -8,6 +8,7 @@
 
 
 
+
 cv::Mat convolution_normal(cv::Mat input, std::vector< std::vector<double> > filter)
 {
 
@@ -56,23 +57,7 @@ cv::Mat convolution_normal(cv::Mat input, std::vector< std::vector<double> > fil
 
 
 
-std::complex<double> W(double num, bool p){
-
-	if(p)
-	{
-		return std::exp(std::complex<double> (0,1) * std::complex<double> (-2*M_PI*num,0));
-	}
-	else
-	{
-		return std::exp(std::complex<double> (0,1) * std::complex<double> (2*M_PI*num,0));
-	}
-
-}
-
-
-
-
-std::vector< std::vector< std::complex<double> > > fft(std::vector< std::vector< std::complex<double> > > f, bool p)
+std::vector< std::vector< std::complex<double> > > fft(std::vector< std::vector< std::complex<double> > > f, std::vector< std::complex<double> >W)
 {
 
 
@@ -119,9 +104,10 @@ std::vector< std::vector< std::complex<double> > > fft(std::vector< std::vector<
 				double k = u%(int)pow(2,m+1);
 
 				F[v][u] = f[y][x]
-						+ f[y][x+l] * W(k/pow(2,m+1), p)
-						+ f[y+l][x] * W(j/pow(2,m+1), p)
-						+ f[y+l][x+l] * W((j+k)/pow(2,m+1), p);
+						+ f[y][x+l] * W[k*pow(2,d-m-1)]
+						+ f[y+l][x] * W[j*pow(2,d-m-1)]
+						+ f[y+l][x+l] * W[(j+k)*pow(2,d-m-1)];
+
 			}
 		}
 
@@ -158,6 +144,25 @@ cv::Mat convolution_fft(cv::Mat input, std::vector< std::vector<double> > filter
 
 
 
+
+	std::vector< std::complex<double> > W(2*width);
+
+	for(int i=0;i<2*width;i++)
+	{
+		W[i] = std::exp(std::complex<double> (0,1) * std::complex<double> (-2*M_PI*i/width,0));
+	}
+
+
+	std::vector< std::complex<double> > M(2*width);
+
+	for(int i=0;i<2*width;i++)
+	{
+		M[i] = std::exp(std::complex<double> (0,1) * std::complex<double> (2*M_PI*i/width,0));
+	}
+
+
+
+
 	std::vector< std::vector< std::complex<double> > > f(width, std::vector< std::complex<double> >(width));
 
 
@@ -177,7 +182,7 @@ cv::Mat convolution_fft(cv::Mat input, std::vector< std::vector<double> > filter
 		}
 	}
 
-	std::vector< std::vector< std::complex<double> > > F1 = fft(f, true);
+	std::vector< std::vector< std::complex<double> > > F1 = fft(f, W);
 
 
 
@@ -203,11 +208,7 @@ cv::Mat convolution_fft(cv::Mat input, std::vector< std::vector<double> > filter
 
 
 
-	std::vector< std::vector< std::complex<double> > > F2 = fft(f, true);
-
-
-
-
+	std::vector< std::vector< std::complex<double> > > F2 = fft(f, W);
 
 
 
@@ -222,7 +223,7 @@ cv::Mat convolution_fft(cv::Mat input, std::vector< std::vector<double> > filter
 	}
 
 
-	std::vector< std::vector< std::complex<double> > > F = fft(F3, false);
+	std::vector< std::vector< std::complex<double> > > F = fft(F3, M);
 
 	cv::Mat output = cv::Mat::zeros(width, width, CV_32FC1);
 
@@ -256,10 +257,7 @@ int main(int argc, char *argv[])
 	cv::Mat input = cv::imread(argv[1], 0);
 
 
-
-
-
-	std::ifstream fs1(argv[2]);
+    std::ifstream fs1(argv[2]);
 
     std::string str;
     std::string num;
@@ -286,9 +284,10 @@ int main(int argc, char *argv[])
 
 
 
-    std::vector< std::vector<double> > filter(filter_rows, std::vector<double> (filter_cols));
 
-    int y = 0;
+	std::vector< std::vector<double> > filter(filter_rows, std::vector<double> (filter_cols));
+
+	int y = 0;
 
 	std::ifstream fs2(argv[2]);
 
