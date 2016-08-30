@@ -86,8 +86,6 @@ std::vector< std::vector< std::complex<double> > > fft(std::vector< std::vector<
 
 
 
-	
-
 	for(int m=0;m<d;m++)
 	{
 		for(int v=0;v<width;v++)
@@ -105,6 +103,12 @@ std::vector< std::vector< std::complex<double> > > fft(std::vector< std::vector<
 						+ f[y][x+l] * W[k*pow(2,d-m-1)]
 						+ f[y+l][x] * W[j*pow(2,d-m-1)]
 						+ f[y+l][x+l] * W[(j+k)*pow(2,d-m-1)];
+
+
+				if(W[1].imag() > 0 && m == d-1)
+				{
+					F[v][u] /= pow(width,2);
+				}
 
 			}
 		}
@@ -185,10 +189,6 @@ cv::Mat convolution_fft(cv::Mat input, std::vector< std::vector<double> > filter
 
 
 
-	clock_t start = clock();
-
-
-
 	for(int y=0;y<width;y++)
 	{
 		for(int x=0;x<width;x++)
@@ -209,7 +209,6 @@ cv::Mat convolution_fft(cv::Mat input, std::vector< std::vector<double> > filter
 	std::vector< std::vector< std::complex<double> > > F2 = fft(f, W);
 
 
-
 	std::vector< std::vector< std::complex<double> > > F3(width, std::vector< std::complex<double> >(width));
 
 	for(int y=0;y<width;y++)
@@ -223,6 +222,8 @@ cv::Mat convolution_fft(cv::Mat input, std::vector< std::vector<double> > filter
 
 	std::vector< std::vector< std::complex<double> > > F = fft(F3, M);
 
+
+
 	cv::Mat output = cv::Mat::zeros(width, width, CV_32FC1);
 
 
@@ -234,9 +235,6 @@ cv::Mat convolution_fft(cv::Mat input, std::vector< std::vector<double> > filter
 		}
 	}
 
-
-
-	std::cout << "convolution_fft (precomputed filter) : " << (double)clock()-start << std::endl;
 
 	return output;
 
