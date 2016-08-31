@@ -224,12 +224,12 @@ cv::Mat convolution_fft(cv::Mat input, std::vector< std::vector<double> > filter
 
 
 
-	cv::Mat output = cv::Mat::zeros(width, width, CV_32FC1);
+	cv::Mat output = cv::Mat::zeros(input.rows, input.cols, CV_32FC1);
 
 
-	for(int y=0;y<width;y++)
+	for(int y=0;y<input.rows;y++)
 	{
-		for(int x=0;x<width;x++)
+		for(int x=0;x<input.cols;x++)
 		{
 			output.at<float>(y, x) = F[y][x].real();
 		}
